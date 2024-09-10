@@ -1,0 +1,88 @@
+---
+title: "Estadistica2Act1"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+
+```{r}
+# Debe ubicar el directorio de trabajo, en este caso, dentro del directorio se ha creado una carpeta llamada
+# "Data Set Inferencia" que contiene el primer conjunto de datos denominado "WDIData.csv"
+library(readr)
+WDIData <- read_csv("Data Set Inferencia/WDIData.csv")
+print(head(data.frame(WDIData)))
+```
+
+```{r}
+# Importación segundo data set:
+library(readxl)
+paises <- read_excel("Data Set Inferencia/Paises.xlsx")
+print(head(data.frame(paises)))
+```
+
+```{r}
+summary(WDIData)
+```
+```{r}
+datos <- WDIData #un respaldo de los datos para no volver a importar si dañamos la estructura:
+# dataset <- datos #Si necesitamos recuperarlos
+```
+Seleccionamos la Proteccion de areas marinas:  
+
++ Nombre: Marine protected areas (% of territorial waters)  
++ Código: ER.MRN.PTMR.ZS
+
+```{r}
+desempleo_m_a <- WDIData[WDIData$`Indicator Code` == 'SL.UEM.ADVN.MA.ZS', c(2,5:67)]
+print(head(desempleo_m_a))
+```
+
+```{r}
+print(names(desempleo_m_a))
+```
+
+```{r}
+library(tidyr)
+
+lf.df <- gather(desempleo_m_a, key="year", value="desempleo_a", 2:64)
+print(head(lf.df))
+```
+
+
+```{r}
+# Eliminemos valores perdidos
+df.lf <- data.frame(na.omit(lf.df))
+print(head(df.lf))
+print(dim(df.lf))
+```
+
+```{r}
+names(df.lf)[1] <- 'ADM0_A3'
+print(head(df.lf))
+```
+```{r}
+library(dplyr)
+df <- left_join(df.lf, paises[,c('ADM0_A3','REGION_WB','NAME_LONG')], by = 'ADM0_A3' )
+dim(df)
+dim(na.omit(df))
+```
+
+```{r}
+df <- na.omit(df)
+
+df <- df %>%
+    mutate_if(is.character, factor) %>%
+    data.frame()
+
+summary(df)
+
+
+```
